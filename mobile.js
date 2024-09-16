@@ -6,8 +6,6 @@ class Paper {
   touchStartY = 0;
   touchMoveX = 0;
   touchMoveY = 0;
-  touchEndX = 0;
-  touchEndY = 0;
   prevTouchX = 0;
   prevTouchY = 0;
   velX = 0;
@@ -16,6 +14,7 @@ class Paper {
   currentPaperX = 0;
   currentPaperY = 0;
   rotating = false;
+  scale = 1; // Initial scale factor
 
   init(paper) {
     paper.addEventListener('touchmove', (e) => {
@@ -30,7 +29,7 @@ class Paper {
         
       const dirX = e.touches[0].clientX - this.touchStartX;
       const dirY = e.touches[0].clientY - this.touchStartY;
-      const dirLength = Math.sqrt(dirX*dirX+dirY*dirY);
+      const dirLength = Math.sqrt(dirX * dirX + dirY * dirY);
       const dirNormalizedX = dirX / dirLength;
       const dirNormalizedY = dirY / dirLength;
 
@@ -49,9 +48,9 @@ class Paper {
         this.prevTouchX = this.touchMoveX;
         this.prevTouchY = this.touchMoveY;
 
-        paper.style.transform = `translateX(${this.currentPaperX}px) translateY(${this.currentPaperY}px) rotateZ(${this.rotation}deg)`;
+        paper.style.transform = `translateX(${this.currentPaperX}px) translateY(${this.currentPaperY}px) rotateZ(${this.rotation}deg) scale(${this.scale})`;
       }
-    })
+    });
 
     paper.addEventListener('touchstart', (e) => {
       if(this.holdingPaper) return; 
@@ -65,16 +64,24 @@ class Paper {
       this.prevTouchX = this.touchStartX;
       this.prevTouchY = this.touchStartY;
     });
+
     paper.addEventListener('touchend', () => {
       this.holdingPaper = false;
       this.rotating = false;
     });
 
-    // For two-finger rotation on touch screens
+    // For two-finger rotation and zoom on touch screens
     paper.addEventListener('gesturestart', (e) => {
       e.preventDefault();
       this.rotating = true;
     });
+
+    paper.addEventListener('gesturechange', (e) => {
+      e.preventDefault();
+      this.scale = e.scale; // Update scale factor based on pinch gesture
+      paper.style.transform = `translateX(${this.currentPaperX}px) translateY(${this.currentPaperY}px) rotateZ(${this.rotation}deg) scale(${this.scale})`;
+    });
+
     paper.addEventListener('gestureend', () => {
       this.rotating = false;
     });
